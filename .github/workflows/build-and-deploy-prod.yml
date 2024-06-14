@@ -1,0 +1,21 @@
+name: Build & deploy - PROD
+
+on:
+  pull_request:
+    types: [ closed ]
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+
+  deployment:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      # dummy console output, replace with deploy instructions
+      - name: Deploy
+        run: |
+          echo "Deploy to PROD environment"

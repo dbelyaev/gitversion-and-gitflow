@@ -1,0 +1,52 @@
+name: Build & deploy - TEST
+
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+
+  define-tag:
+    if: contains(toJSON(github.head_ref), 'release/') || contains(toJSON(github.head_ref), 'hotfix/')
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+        with:
+          fetch-depth: 0 # this fetch will include all history and tags
+
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@8d68520cde93ca9226ee0e09870caaca033d2cd2 # v1.1.1
+        with:
+          versionSpec: '5.x'
+
+      - name: Determine Version
+        uses: gittools/actions/gitversion/execute@8d68520cde93ca9226ee0e09870caaca033d2cd2 # v1.1.1
+     
+      - name: Display SemVer
+        run: |
+          echo "SemVer: ${{ env.fullSemVer }}"
+
+      # - name: Create git tag
+      #   run: |
+      #     git tag v${{ env.fullSemVer }}
+      #     git push  --tags origin
+
+  deployment:
+    if: contains(toJSON(github.head_ref), 'release/') || contains(toJSON(github.head_ref), 'hotfix/')
+    runs-on: ubuntu-latest
+
+    steps:
+      # dummy console output, replace with deploy instructions
+      - name: Deploy
+        run: |
+          echo "Deploy to TEST environment"
