@@ -1,0 +1,7 @@
+branches:
+  develop:
+    tag: beta
+  release:
+    tag: rc
+  hotfix:
+    tag: rc
