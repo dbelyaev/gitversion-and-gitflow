@@ -1,0 +1,72 @@
+name: Post Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+
+  create-release-tag:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+        with:
+          fetch-depth: 0 # this fetch will include all history and tags
+
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@8d68520cde93ca9226ee0e09870caaca033d2cd2 # v1.1.1
+        with:
+          versionSpec: '5.x'
+
+      - name: Determine Version
+        uses: gittools/actions/gitversion/execute@8d68520cde93ca9226ee0e09870caaca033d2cd2 # v1.1.1
+     
+      - name: Display SemVer
+        run: |
+          echo "SemVer: ${{ env.fullSemVer }}"
+     
+      # - name: Create git tag
+      #   run: |
+      #     git tag v${{ env.fullSemVer }}
+      #     git push  --tags origin
+      
+      # - name: Create GitHub release
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: |
+      #     gh release create ${{ env.fullSemVer }} --title v${{ env.fullSemVer }} --generate-notes
+
+  create-back-merge-pr:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+      repository-projects: read # needed in case of "gp pr edit" (see issue: https://github.com/cli/cli/issues/6274)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+        with:
+          fetch-depth: 0 # this fetch will include all history and tags
+
+      - name: Create Pull Request
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          title='Merge ${{ github.ref_name }} into develop'
+          body='Post release align of  **develop** branch with **${{ github.ref_name }}**.<br />This PR is automatically created by a GitHub Action.'
+
+          # try to create a PR, if it already exists, edit it
+          gh pr create -B develop --title "$title" --body "$body" \
+            || gh pr edit -B develop --title "$title" --body "$body"

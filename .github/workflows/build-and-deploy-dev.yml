@@ -1,0 +1,20 @@
+name: Build & deploy - DEV
+
+on:
+  push:
+    branches: 
+      - 'develop'
+
+permissions:
+  contents: read
+
+jobs:
+
+  deployment:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # dummy console output, replace with deploy instructions
+      - name: Deploy
+        run: |
+          echo "Deploy to DEV environment"
